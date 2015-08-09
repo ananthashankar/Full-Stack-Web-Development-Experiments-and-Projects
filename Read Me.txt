@@ -1,0 +1,13 @@
+This is a static web page application built using python, HTML, CSS, Bootstrap and JQuery.
+The application displays a list of movies with poster and trailer. To view the trailer of the movie click on the movie poster. To view the information on the movie hover over movie poster.
+
+Technical Details: 
+	- Python Version: 3.4.3
+	- Python Extended Libraries for version Python 3.4.3 (Attached)
+	- A browser with latest version
+	- PyCharm IDE Version: 4.5
+
+Installation Help Link - https://docs.python.org/3/install/
+
+Download the Source Code and Import the External Libraries in PyCharm IDE
+Run the File entertainment.py the page will be displayed
