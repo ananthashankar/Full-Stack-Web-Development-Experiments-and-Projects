@@ -1,0 +1,1 @@
+This repository contains experiments and projects on full stack concepts
