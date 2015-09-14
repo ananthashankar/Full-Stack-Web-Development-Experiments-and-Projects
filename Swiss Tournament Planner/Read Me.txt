@@ -1,0 +1,13 @@
+This project consists of a backend code for database creation and to access data from the database. DB used is postgresql. Backend written in python. The project is designed to create Swiss Pair for a tournament where every player will get to play in every round.
+
+Technical Details: 
+	- Python Version: 3.4.3
+	- Python Extended Libraries (especially python DB library and psycopg2)
+	- Postgresql DB
+	- PyCharm IDE Version: 4.5
+
+Installation Help Link - https://docs.python.org/3/install/
+
+Download the Source Code and Import the External Libraries in PyCharm IDE
+Run tournament.sql in Postgresql to create needed database and tables
+Run the File tournament_test.py to test basic functionalities
