@@ -75,33 +75,35 @@ def playerStandings():
     with curr_conn_close() as c:
         c.execute("Select id, name, wins, matchesPlayed from players order by points")
         res = list(c.fetchall())
-        cnt = 0
-        while(cnt < len(res)):
-            if(cnt < len(res)-1):
-                row = res[cnt]
-                tmp = res[cnt+1]
-                #Checking whether the next player has same wins
-                if(int(row[2])==int(tmp[2])):
-                    c.execute("Select sum(wins) from players where id in(Select player1 from matches where player2 = %s)", (int(row[0]),))
-                    tmp1 = c.fetchone()
-                    tmp4 = int(tmp1[0])
-                    c.execute("Select sum(wins) from players where id in(Select player2 from matches where player1 = %s)", (int(row[0]),))
-                    tmp1 = c.fetchone()
-                    tmp4 = tmp4 + int(tmp1[0])
-                    c.execute("Select sum(wins) from players where id in(Select player1 from matches where player2 = %s)", (int(tmp[0]),))
-                    tmp1 = c.fetchone()
-                    tmp2 = int(tmp1[0])
-                    c.execute("Select sum(wins) from players where id in(Select player2 from matches where player1 = %s)", (int(tmp[0]),))
-                    tmp1 = c.fetchone()
-                    tmp2 = tmp2 + int(tmp1[0])
-                    #Checking whose Opponent Match Wins is greater
-                    if(tmp2 > tmp4):
-                        #Exchanging the ranks if the latter player has better profile by OMW ratings
-                        tmp3 = res[cnt + 1]
-                        res[cnt + 1] = res[cnt]
-                        res[cnt] = tmp3
-            cnt = cnt + 1;
-        
+        c.execute("Select count(*) from matches")
+        temp = c.fetchone()
+        if(int(temp[0])>0):
+            cnt = 0
+            while(cnt < len(res)):
+                if(cnt < len(res)-1):
+                    row = res[cnt]
+                    tmp = res[cnt+1]
+                    #Checking whether the next player has same wins
+                    if(int(row[2])==int(tmp[2])):
+                        c.execute("Select sum(wins) from players where id in(Select player1 from matches where player2 = %s)", (int(row[0]),))
+                        tmp1 = c.fetchone()
+                        tmp4 = int(tmp1[0])
+                        c.execute("Select sum(wins) from players where id in(Select player2 from matches where player1 = %s)", (int(row[0]),))
+                        tmp1 = c.fetchone()
+                        tmp4 = tmp4 + int(tmp1[0])
+                        c.execute("Select sum(wins) from players where id in(Select player1 from matches where player2 = %s)", (int(tmp[0]),))
+                        tmp1 = c.fetchone()
+                        tmp2 = int(tmp1[0])
+                        c.execute("Select sum(wins) from players where id in(Select player2 from matches where player1 = %s)", (int(tmp[0]),))
+                        tmp1 = c.fetchone()
+                        tmp2 = tmp2 + int(tmp1[0])
+                        #Checking whose Opponent Match Wins is greater
+                        if(tmp2 > tmp4):
+                            #Exchanging the ranks if the latter player has better profile by OMW ratings
+                            tmp3 = res[cnt + 1]
+                            res[cnt + 1] = res[cnt]
+                            res[cnt] = tmp3
+                cnt = cnt + 1;
     return res
 
 
@@ -126,7 +128,6 @@ def reportMatch(winner, loser, tie_flag):
         
         win_num = int(res[1]) + 1
         c.execute("Update players Set wins=%s, matchesPlayed=%s, loss=%s, points=%s where id = %s", (win_num, match_num, loss_num, pnt_num, winner,))
-        conn.commit()
         c.execute("Select matchesPlayed, wins, loss, points from players where id = %s", (loser,))
         res = c.fetchone()
         match_num = int(res[0]) + 1
@@ -137,7 +138,7 @@ def reportMatch(winner, loser, tie_flag):
             loss_num = loss_num - 1
             pnt_num = pnt_num + 1
         
-        c.execute("Update players Set loss=%s, matchesPlayed=%s loss=%s, points=%s where id = %s", (loss_num, match_num,  loss_num, pnt_num, loser,))
+        c.execute("Update players Set wins=%s, matchesPlayed=%s, loss=%s, points=%s where id = %s", (win_num, match_num,  loss_num, pnt_num, loser,))
         #Updating match results in matches table
         if(tie_flag!=1):
             c.execute("Update matches set winner=%s, loser=%s where (player1 = %s AND player2 = %s AND winner = 0 AND loser = 0) OR (player1 = %s AND player2 = %s AND winner = 0 AND loser = 0)", (winner, loser, winner, loser, loser, winner,))
@@ -193,18 +194,24 @@ def swissPairings():
                 c.execute("Select count(*) from matches where (player1 = %s AND player2 = %s) OR (player1 = %s AND player2 = %s)", (int(curr_row[0]), int(next_row[0]), int(next_row[0]), int(curr_row[0]),))
                 tmp1 = c.fetchone()
                 if(int(tmp1[0])==0):
+                    fin.append(tuple(res[0]) + tuple(res[tmp]))
+                    del res[tmp]
+                    del res[0]
                     break
                 tmp = tmp + 1
-            fin.append(tuple(res[0]) + tuple(res[tmp]))
-            del res[0]
-            del res[tmp]
+            
             cnt = cnt + 1
         
         
         for sPair in fin:
-            c.execute("Select max(round) from matches")
-            rnd = c.fetchone()
-            c.execute("Insert into matches (player1, player2, round, winner, loser) values (%s, %s, %s, 0, 0)", (int(spair[0]), int(spair[2]), int(rnd[0]),))
+            c.execute("Select count(*) from matches")
+            count_match = c.fetchone()
+            rnd = 0
+            if(int(count_match[0])>0):
+                c.execute("Select max(round) from matches")
+                m_rnd = c.fetchone()
+                rnd = int(m_rnd[0])
+            c.execute("Insert into matches (player1, player2, round, winner, loser) values (%s, %s, %s, 0, 0)", (int(sPair[0]), int(sPair[2]), rnd,))
     return fin
 
 

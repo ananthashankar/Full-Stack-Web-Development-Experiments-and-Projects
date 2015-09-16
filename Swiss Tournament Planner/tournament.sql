@@ -8,7 +8,7 @@
 -- Deleting existing and Creating new DB with name "tournament"
 DROP DATABASE IF EXISTS tournament;
 CREATE DATABASE tournament;
-
+\c tournament
 -- Creating new Table with name players and respective required columns
 -- with datatypes required
 CREATE TABLE players (id SERIAL PRIMARY KEY, name TEXT, matchesPlayed INTEGER, 
