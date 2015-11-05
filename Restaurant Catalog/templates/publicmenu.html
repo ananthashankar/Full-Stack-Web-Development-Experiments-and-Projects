@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Menu List</title>
+		<link rel="stylesheet" href="/static/css/bootstrap.min.css">
+	    <link rel="stylesheet" href="https://normalize-css.googlecode.com/svn/trunk/normalize.css">
+	    <script type="text/javascript" src="/static/js/jquery-1.11.3.min.js"></script>
+	    <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+	    <link rel=stylesheet type=text/css href="/static/css/styles.css">
+
+	</head>
+
+	<body>
+		<div class="container">
+			<div class="row">
+				<div class="col-md-1 text-left" style="padding-top: 10px">
+
+					<img src="{{restaurant.picture}}" alt="Restaurant Image" class="img-responsive img-circle" 
+					style="margin: 0 auto" width="80px" height="80px">
+
+				</div>
+				<div class="col-md-7 text-left">
+					<h1>{{restaurant.name}}</h1></br>
+				</div>
+				<div class="col-md-4 text-right pull-right" style="padding-top: 10px">
+					<a class="btn btn-default" role="button" href="{{url_for('allRestaurants')}}"> Back to Restaurants </a></br>
+				</div>
+			</div>
+
+
+			<div class="flash">
+				<!--MESSAGE FLASHING EXAMPLE -->
+				{% with messages = get_flashed_messages() %}
+				{% if messages %}
+
+				<ul>
+				{% for message in messages %}
+				  <li><strong>{{message}}</strong></li></br>
+				  {% endfor %}
+				</ul>
+				{% endif %}
+				{% endwith %}
+			</div>
+			</br>
+
+			{% if items.count() %}
+
+				<div class="row">
+					
+					<div class="display row">
+						</br>
+						<h2> Appetizers & Entrees </h2></br>
+						{% for i in items %}
+						{% if i.course == "Appetizer" or i.course == "Entree" %}
+						
+						<div class="row">
+							<div class="col-md-6 text-left">
+
+								<img src="{{i.picture}}" alt="Menu Image" class="img-responsive img-rounded" 
+									style="margin: 0 " width="140px" height="140px">
+							</div>
+							
+							<div class="col-md-6 text-left">
+								<h4>{{i.name}} - {{i.course}}</h4>
+
+								<h4>{{i.description}}</h4>
+
+								<h4> {{i.price}} </h4>
+
+							</div>
+						
+						</div></br>
+
+						{% endif %}
+						{% endfor %}
+					</div>
+					</br>
+					<div class="display row">
+						</br>
+						<h2> Main Course & Desserts </h2></br>
+						{% for i in items %}
+						{% if i.course == "Main" or i.course == "Dessert" %}
+						
+						<div class="row">
+							<div class="col-md-6 text-left">
+
+								<img src="{{i.picture}}" alt="Menu Image" class="img-responsive img-rounded" 
+									style="margin: 0 " width="140px" height="140px">
+							</div>
+							
+							<div class="col-md-6 text-left">
+								<h4>{{i.name}} - {{i.course}}</h4>
+
+								<h4>{{i.description}}</h4>
+
+								<h4> {{i.price}} </h4>
+
+							</div>
+						
+						</div></br>
+						{% endif %}
+						{% endfor %}
+					</div>
+					</br>
+					<div class="display row">
+						</br>
+						<h2> Beverages & Liquor </h2></br>
+						{% for i in items %}
+						{% if i.course == "Liquor" or i.course == "Beverage" %}
+
+						<div class="row">
+							<div class="col-md-6 text-left">
+
+								<img src="{{i.picture}}" alt="Menu Image" class="img-responsive img-rounded" 
+									style="margin: 0 " width="140px" height="140px">
+							</div>
+							
+							<div class="col-md-6 text-left">
+								<h4>{{i.name}} - {{i.course}}</h4>
+
+								<h4>{{i.description}}</h4>
+
+								<h4> {{i.price}} </h4>
+
+							</div>
+						
+						</div></br>
+
+						{% endif %}
+						{% endfor %}
+					</div>
+					
+
+				</div>
+
+
+			
+
+			{% else %}
+
+				<p> No Menu to Display</p>
+
+			{% endif %}
+
+		</div>
+	</body>
+
+</html>

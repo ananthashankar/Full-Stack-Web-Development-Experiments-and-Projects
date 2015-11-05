@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Restaurants</title>
+		<link rel="stylesheet" href="/static/css/bootstrap.min.css">
+	    <link rel="stylesheet" href="https://normalize-css.googlecode.com/svn/trunk/normalize.css">
+	    <script type="text/javascript" src="/static/js/jquery-1.11.3.min.js"></script>
+	    <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+	    <link rel=stylesheet type=text/css href="/static/css/styles.css">
+		
+
+	</head>
+	<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-6 text-uppercase text-left">
+				<a href="/" ><h1><u>Restaurants</u></h1></br></a>
+			</div>
+			<div class="col-md-6 text-right">
+				<a class="btn btn-default" role="button" href="{{url_for('showLogin')}}"> Login </a>
+			</div>
+		</div>
+
+	<!--MESSAGE FLASHING EXAMPLE -->
+		{% with messages = get_flashed_messages() %}
+		{% if messages %}
+
+		<ul>
+		{% for message in messages %}
+		  <li><strong>{{message}}</strong></li></br>
+		  {% endfor %}
+		</ul>
+		{% endif %}
+		{% endwith %}
+
+		<div class="display row">
+		</br>
+		{% for restaurant in restaurants %}
+
+			
+				<div class="row text-center">
+					<a href="{{url_for('showMenu', restaurant_id=restaurant.id)}}" >
+						<img src="{{restaurant.picture}}" alt="Restaurant Image" class="img-responsive img-rounded" style="margin: 0 auto"
+										width="500px" height="500px">
+					</a>
+					<h3><a href="{{url_for('showMenu', restaurant_id=restaurant.id)}}" >{{restaurant.name}}</a></h3>
+					</br>
+					</br>
+				</div>
+
+			
+			
+
+		{% endfor %}
+
+		</div>
+	</div>
+
+	</body>
+
+</html>

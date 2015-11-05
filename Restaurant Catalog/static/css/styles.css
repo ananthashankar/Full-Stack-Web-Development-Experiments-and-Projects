@@ -1,0 +1,53 @@
+body        	{ 	
+					font-family: sans-serif; 
+					background-color: #333333; 
+					background: url(images/fork.jpg) no-repeat center center fixed;
+					-moz-background-size: cover; 
+					-webkit-background-size: cover; 
+					-o-background-size: cover; 
+					background-size: cover; 
+				}
+
+.display		{
+			    	border-width : 2px;
+				    border-style: solid;
+				    border-color: silver;
+				    border-radius: 15px;
+				    padding-left: 15px;
+
+				    
+			    }
+
+.login			{
+					margin: 200px; 
+					border-width: 2px; 
+					border-color: silver;
+         			border-style: solid; 
+         			border-radius: 15px; 
+         			padding: 50px;
+				}
+
+
+h1, h2  { color: #CCCCCC; }
+h1, h2          { font-family: 'Georgia', serif; margin: 0; }
+h1              { border-bottom: 2px; margin-top: 20px;}
+h2            	{ text-align: center; }
+h3, h4			{ color: #FFFFCC; }
+
+p               { color: #FFFFCC;}
+
+a 				{ text-decoration: none; color:#FFFFCC; font-size: .75em; margin-top: 20px;}
+
+.pane 			{ position:absolute; left: 25%; border: 2px solid;
+    			  border-radius: 25px; padding: 5px; margin: 5px; border-color: #999999;
+    			  background-color: #333333; }
+
+.flash          { color: white; } 
+
+/*.header       {left:50%; text-align: center;}
+.name 			{width:50%;display: inline-block; float: left;}
+.description 	{}
+.price 			{text-align: right; width:50%; float: right; }
+.editdeletepane	{}
+
+.flash          { background: #cee5F5; } */
