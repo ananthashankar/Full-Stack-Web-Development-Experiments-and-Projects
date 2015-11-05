@@ -1,0 +1,19 @@
+This project consists of a backend code for database creation and to access data from the database. DB used is SQLite. Backend written in python. The project is designed to create Restaurant and their menu for each individual user or owner of the restaurant. The owner should either have google+ account or Facebook account to us this application.
+
+Technical Details: 
+Backend:
+	- Python Version: 3.4.3
+	- Python Extended Libraries (especially python DB library and psycopg2)
+	- Postgresql DB
+	- PyCharm IDE Version: 4.5
+	- Flask library
+	- SqlAlchemy - SQLite 
+	- Vagrant VM
+Frontend:
+	- HTML5, CSS3, Javascript & Twitter Bootstrap
+	 
+
+Installation Help Link - https://docs.python.org/3/install/
+
+Start with the “localhost or the server”/restaurants link to start use this application.
+API for this application has been implemented in both JSON and XML. There is wide scope for further development and enhancement to provide more api formats.

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+	<author>
+		<name>@asak</name>
+	</author>
+	<title type="text">Restaurant Menu</title>
+	
+	
+	<entry>
+		<title type="text">{{item.name}}</title>
+		<summary type="xhtml">
+			<div xmlns="http://www.w3.org/1999/xhtml">
+				<p>Name: <item_name>{{item.name}}</item_name></p>
+				<p>Id: <item_id>{{item.id}}</item_id></p>
+				<p>Picture: <item_image>{{item.picture}}</item_image></p>
+				<p>Course: <item_course>{{item.course}}</item_course></p>
+				<p>Price: <item_price>{{item.price}}</item_price></p>
+			</div>
+		</summary>
+	</entry>
+	
+</feed>

@@ -1,6 +1,9 @@
 # importing flask and supporting functionaities
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, make_response
+from flask.ext.seasurf import SeaSurf
+
 app = Flask(__name__)
+csrf = SeaSurf(app)
 
 from flask import session as login_session
 
@@ -36,6 +39,7 @@ def showLogin():
 	return render_template('login.html', STATE=state)
 
 # "routing and method to redirect to home page after google login"
+@csrf.exempt
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
 	# Validate state tokens
@@ -124,6 +128,8 @@ def gconnect():
 	return output
 
 
+#facebook login
+@csrf.exempt
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
 	print("here fb login")
@@ -504,6 +510,25 @@ def restaurantOneMenuJSON(restaurant_id, menu_id):
 	item = session.query(MenuItem).filter(MenuItem.id == menu_id, MenuItem.restaurant_id == restaurant_id).one()
 	return jsonify(MenuItem = [item.serialize])
 
+# "routing and method for restaurants xml"
+@app.route('/restaurants/XML')
+def restaurantsXML():
+    restaurants = session.query(Restaurant).all()
+    return render_template('restaurants.xml', restaurants=restaurants)
+
+# "routing and method for restaurants menu xml"
+@app.route('/restaurants/<int:restaurant_id>/menu/XML')
+def restaurantsMenuXML(restaurant_id):
+    restaurant  = session.query(Restaurant).filter(Restaurant.id == restaurant_id)
+    items = session.query(MenuItem).filter(MenuItem.restaurant_id == restaurant_id).all()
+    return render_template('restaurantMenu.xml', restaurant=restaurant, items=items)
+
+
+# "routing and method for restaurants single menu xml"
+@app.route('/restaurants/<int:restaurant_id>/menu/<int:menu_id>/XML')
+def restaurantsSingleMenuXML(restaurant_id, menu_id):
+    item = session.query(MenuItem).filter(MenuItem.id == menu_id, MenuItem.restaurant_id == restaurant_id).one()
+    return render_template('restaurantSingleMenu.xml', item=item)
 
 
 if __name__ == '__main__':
