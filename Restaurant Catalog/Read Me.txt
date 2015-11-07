@@ -1,19 +1,72 @@
-This project consists of a backend code for database creation and to access data from the database. DB used is SQLite. Backend written in python. The project is designed to create Restaurant and their menu for each individual user or owner of the restaurant. The owner should either have google+ account or Facebook account to us this application.
+This project consists of a backend and front end code for Restaurant Catalog App. DB used is SQLite. Backend written in python. The project is designed to create Restaurant and their menu for each individual user or owner of the restaurant. The owner should either have google+ account or Facebook account to us this application.
 
 Technical Details: 
-Backend:
-	- Python Version: 3.4.3
-	- Python Extended Libraries (especially python DB library and psycopg2)
-	- Postgresql DB
-	- PyCharm IDE Version: 4.5
-	- Flask library
-	- SqlAlchemy - SQLite 
-	- Vagrant VM
-Frontend:
-	- HTML5, CSS3, Javascript & Twitter Bootstrap
-	 
+
+- Vagrant VM - 1.7.4
+
+Installations - Download the above version installer to your respective OS from the vagrant website and installer will install it to your system.
+
+
+- Python Version: 2.7.10
 
 Installation Help Link - https://docs.python.org/3/install/
 
-Start with the “localhost or the server”/restaurants link to start use this application.
+
+- Sqlite DB
+
+Installation Help Link - https://www.sqlite.org/download.html
+
+
+- Flask - 0.10
+
+Installation Help Link - http://flask.pocoo.org/docs/0.10/upgrading/#version-0-10
+
+
+- SqlAlchemy - 0.9.10 
+
+Installation Help Link - http://docs.sqlalchemy.org/en/rel_1_0/intro.html#installation
+
+- oauth2client
+
+
+- requests - 2.7.0
+
+- httplib2 - https://docs.python.org/2/library/httplib.html#
+
+
+- HTML5, CSS3, Javascript & Twitter Bootstrap (All latest version could be downloaded from there respective websites)
+
+
+SetUp:
+
+- run the below command using command line to get your Vagrant VM up
+
+$vagrant up
+$vagrant ssh
+
+- navigate to the  project directory and run the below command to create new DB
+
+$ python database_setup.py
+
+- once the DB is created now execute the below command to make the application running
+
+$ python final project.py
+
+
+- With app running in your browser you can go to the link http//localhost:portnumber to go to the home page
+- With existing DB you can view few already created restaurant information without having modification access
+- To add or create a new restaurant or modify the previously created restaurant you should’ve either a Facebook or gmail account
+- Only the restaurant created by you and with a particular id will have the access to modify or delete.
+
+
 API for this application has been implemented in both JSON and XML. There is wide scope for further development and enhancement to provide more api formats.
+
+To retrieve data from application below are the API links and formats
+
+http//localhost:portnumber/restaurants/JSON
+http//localhost:portnumber/restaurants/restaurant_id/Menu/JSON
+http//localhost:portnumber/restaurants/restaurant_id/Menu/menu_id/JSON
+
+http//localhost:portnumber/restaurants/XML
+http//localhost:portnumber/restaurants/restaurant_id/Menu/XML
+http//localhost:portnumber/restaurants/restaurant_id/Menu/menu_id/XML

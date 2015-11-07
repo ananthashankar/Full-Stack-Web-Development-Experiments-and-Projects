@@ -23,13 +23,29 @@
 
 			</br>
 
-			<form action="{{url_for('createNewRestaurant')}}" method='POST'>
+
+			<div class="flash">
+			<!--MESSAGE FLASHING EXAMPLE -->
+			{% with messages = get_flashed_messages() %}
+			{% if messages %}
+
+			<ul>
+			{% for message in messages %}
+			  <li><strong>{{message}}</strong></li></br>
+			  {% endfor %}
+			</ul>
+			{% endif %}
+			{% endwith %}
+			</div>
+			</br>
+
+
+			<form action="{{url_for('createNewRestaurant')}}" method='POST' enctype="multipart/form-data">
 				<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 				<div class="row">
 					<div class="col-xs-4">
 						
 						<h3>Name : </h3><input type='text' class="form-control" size='30' name='name' placeholder='Enter a Name'></br>
-
 
 	    				<h3>Upload Image : </h3><input type='file' class="btn btn-default" role="button" name='image' id='imgInp' ></br>
 

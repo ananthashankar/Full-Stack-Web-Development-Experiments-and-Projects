@@ -1,9 +1,18 @@
 # importing flask and supporting functionaities
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, make_response
+from flask import send_from_directory
 from flask.ext.seasurf import SeaSurf
+from werkzeug import secure_filename
+import os
+from functools import wraps
+
+UPLOAD_FOLDER = 'static/images/uploads'
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
 csrf = SeaSurf(app)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 
 from flask import session as login_session
 
@@ -30,6 +39,44 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 CLIENT_ID = json.loads(open('client_secrets.json', 'r').read())['web']['client_id']
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' not in login_session:
+            return redirect(url_for('showlogin'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+# Verifying file format
+def allowed_file(filename):
+	return '.' in filename and \
+			filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+# copying file to upload folder
+@csrf.exempt
+@app.route('/uploads')
+def upload_file(request):
+	file = request.files['image']
+	if file and allowed_file(file.filename):
+		filename = secure_filename(file.filename)
+		file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+		return 1
+	else:
+		print("here uploads")
+		flash("Image not saved. File type not supported. Please try \
+			again with supported image formats ('png', 'jpg', 'jpeg', 'gif')")
+		return None
+
+
+# serving file to required page
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+	print("here" + send_from_directory(app.config['UPLOAD_FOLDER'], filename))
+	return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 
 # "routing and method to google and facebook login feature"
 @app.route('/login')
@@ -122,7 +169,8 @@ def gconnect():
 	output += '!</h1>'
 	output += '<img src="'
 	output += login_session['picture']
-	output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+	output += ' " style = "width: 300px; height: 300px;border-radius: 150px;\
+	-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
 	flash("You are now logged in as %s" % login_session['username'])
 	print "done!"
 	return output
@@ -145,7 +193,8 @@ def fbconnect():
 	#Exchange short lived to long lived server side token
 	app_id = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_id']
 	app_secret = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_secret']
-	url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (app_id, app_secret, access_token)
+	url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s'\
+	 % (app_id, app_secret, access_token)
 	h = httplib2.Http()
 	result = h.request(url, 'GET')[1]
 
@@ -192,7 +241,8 @@ def fbconnect():
 	output += '!</h1>'
 	output += '<img src="'
 	output += login_session['picture']
-	output += ' " style = "width: 100px; height: 100px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+	output += ' " style = "width: 100px; height: 100px;border-radius: 150px;\
+	-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
 	flash("You are now logged in as %s" % login_session['username'])
 	print "done!"
 	return output
@@ -203,7 +253,8 @@ def fbconnect():
 
 # user related methods
 def createUser(login_session):
-	newUser = User(name=login_session['username'], email=login_session['email'], picture=login_session['picture'])
+	newUser = User(name=login_session['username'], email=login_session['email'],\
+	 picture=login_session['picture'])
 	session.add(newUser)
 	session.commit()
 	user = session.query(User).filter_by(email=login_session['email']).one()
@@ -307,18 +358,23 @@ def allRestaurants():
 	if 'username' not in login_session:
 		return render_template('publicrestaurants.html', restaurants=restaurants)
 	else:
-		return render_template("restaurants.html", restaurants = restaurants, picture=login_session['picture'])
+		return render_template("restaurants.html", restaurants = restaurants,\
+		 picture=login_session['picture'])
 
 
 
 # "routing and method to create new restaurants"
+@login_required
 @app.route('/restaurant/new', methods=['GET', 'POST'])
 def createNewRestaurant():
-	if 'username' not in login_session:
-		return redirect ('/login')
+	#if 'username' not in login_session:
+	#	return redirect ('/login')
 	if request.method == 'POST':
 		if request.form['name']:
-			path = "/static/images/restaurants/" + request.form['image']
+			path = ""
+			if upload_file(request) != None:
+				file = request.files['image']
+				path = os.path.join('/', app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
 			restaurant = Restaurant(name = request.form['name'], user_id=login_session['user_id'], \
 				picture=path)
 			session.add(restaurant)
@@ -332,22 +388,26 @@ def createNewRestaurant():
 
 
 # "routing and method to edit the restaurant details"
+@login_required
 @app.route('/restaurant/<int:restaurant_id>/edit', methods=['GET', 'POST'])
 def editRestaurant(restaurant_id):
-	if 'username' not in login_session:
-		return redirect ('/login')
+	#if 'username' not in login_session:
+	#	return redirect ('/login')
 	restaurant = session.query(Restaurant).get(restaurant_id)
 	if restaurant.user_id != login_session['user_id']:
 		redirect(url_for('allRestaurants'))
-		return "<script>function myFunction() {var a = alert('You are not authorized to edit this restaurant. \
-		 Please create your own restaurant in order to edit.');}</script><body onload='myFunction()''>"
+		return "<script>function myFunction() {var a = alert('You are not authorized \
+			to edit this restaurant. Please create your own restaurant in order to \
+			edit.');}</script><body onload='myFunction()''>"
 
 
 	if request.method == 'POST':
 		if request.form['name']:
 			restaurant.name = request.form['name']
-		if request.form.get('image') != None:
-			path = "/static/images/restaurants/" + request.form['image']
+
+		if upload_file(request) != None:
+			file = request.files['image']
+			path = os.path.join('/', app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
 			restaurant.picture = path
 
 		session.add(restaurant)
@@ -356,19 +416,22 @@ def editRestaurant(restaurant_id):
 		return redirect(url_for('allRestaurants'))
 
 	else:
-		return render_template("editrestaurant.html", restaurant = restaurant, restaurant_id = restaurant_id)
+		return render_template("editrestaurant.html", restaurant = restaurant,\
+		 restaurant_id = restaurant_id)
 
 
 
 # "routing and method to delete the restaurant details"
+@login_required
 @app.route('/restaurant/<int:restaurant_id>/delete', methods=['GET', 'POST'])
 def deleteRestaurant(restaurant_id):
-	if 'username' not in login_session:
-		return redirect ('/login')
+	#if 'username' not in login_session:
+	#	return redirect ('/login')
 	restaurant = session.query(Restaurant).get(restaurant_id)
 	if restaurant.user_id != login_session['user_id']:
-		return "<script>function myFunction() {alert('You are not authorized to delete this restaurant. \
-		 Please create your own restaurant in order to delete.');}</script><body onload='myFunction()''>"
+		return "<script>function myFunction() {alert('You are not authorized to \
+			delete this restaurant. Please create your own restaurant in order to \
+			delete.');}</script><body onload='myFunction()''>"
 
 	if request.method == 'POST':
 		session.query(Restaurant).filter_by(id=restaurant_id).delete(synchronize_session=False)
@@ -377,7 +440,8 @@ def deleteRestaurant(restaurant_id):
 		return redirect(url_for('allRestaurants'))
 
 	else:
-		return render_template("deleterestaurant.html", restaurant = restaurant, restaurant_id = restaurant_id)
+		return render_template("deleterestaurant.html", restaurant = restaurant,\
+		 restaurant_id = restaurant_id)
 
 
 
@@ -396,25 +460,31 @@ def showMenu(restaurant_id):
 
 
 # "routing and method to create menuitem for a restaurant"
+@login_required
 @app.route('/restaurant/<int:restaurant_id>/menu/new', methods=['GET', 'POST'])
 def createMenuItem(restaurant_id):
-	if 'username' not in login_session:
-		return redirect ('/login')
+	#if 'username' not in login_session:
+	#	return redirect ('/login')
 
 	restaurant = session.query(Restaurant).get(restaurant_id)
 	creator = getUserInfo(restaurant.user_id)
 
 	if creator.id != login_session['user_id']:
-		return "<script>function myFunction() {alert('You are not authorized to add menu to this restaurant. \
-		 Please create your own restaurant in order to create menu.');}</script><body onload='myFunction()''>"
+		return "<script>function myFunction() {alert('You are not authorized \
+			to add menu to this restaurant. Please create your own restaurant \
+			in order to create menu.');}</script><body onload='myFunction()''>"
 
 
 	if request.method == 'POST':
 		if request.form['name']:
 
-			path = "/static/images/menuitems/" + request.form['image'] 
-			item = MenuItem(name=request.form['name'], restaurant_id=restaurant_id, course=request.form['course'],\
-			 description=request.form['description'], price=request.form['price'], user_id=login_session['user_id'],\
+			path = ""
+			if upload_file(request) != None:
+				file = request.files['image']
+				path = os.path.join('/', app.config['UPLOAD_FOLDER'], secure_filename(file.filename)) 
+			item = MenuItem(name=request.form['name'], restaurant_id=restaurant_id, \
+				course=request.form['course'], description=request.form['description'], \
+				price=request.form['price'], user_id=login_session['user_id'],\
 			  picture=path)
 			session.add(item)
 			session.commit()
@@ -427,24 +497,28 @@ def createMenuItem(restaurant_id):
 
 
 # "routing and method to edit menuitem of a restaurant"
+@login_required
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET', 'POST'])
 def editMenuItem(restaurant_id, menu_id):
-	if 'username' not in login_session:
-		return redirect ('/login')
+	#if 'username' not in login_session:
+	#	return redirect ('/login')
 
 	restaurant = session.query(Restaurant).get(restaurant_id)
 	creator = getUserInfo(restaurant.user_id)
 
 	if creator.id != login_session['user_id']:
-		return "<script>function myFunction() {var a = alert('You are not authorized to edit menu to this restaurant. \
-		 Please create your own restaurant in order to edit menu.');}</script><body onload='myFunction()''>"
+		return "<script>function myFunction() {var a = alert('You are not authorized \
+			to edit menu to this restaurant. \
+		 Please create your own restaurant in order to edit menu.');}\
+		</script><body onload='myFunction()''>"
 
 
 
 	menu_item = session.query(MenuItem).filter_by(id=menu_id, restaurant_id=restaurant_id).one()
 	if request.method == 'POST':
-		if request.form.get('image') != None:
-			path = "/static/images/menuitems/" + request.form['image']
+		if upload_file(request) != None:
+			file = request.files['image']
+			path = os.path.join('/', app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
 			menu_item.picture = path
 		menu_item.name = request.form['name']
 		menu_item.course = request.form['course']
@@ -457,22 +531,26 @@ def editMenuItem(restaurant_id, menu_id):
 		return redirect(url_for('showMenu', restaurant_id=restaurant_id))
 
 	else:
-		return render_template("editmenuitem.html", restaurant_id = restaurant_id, menu_id=menu_id, menu_item=menu_item)
+		return render_template("editmenuitem.html", restaurant_id = restaurant_id, \
+			menu_id=menu_id, menu_item=menu_item)
 
 
 
 # "routing and method to delete menuitem of a restaurant"
+@login_required
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete', methods=['GET', 'POST'])
 def deleteMenuItem(restaurant_id, menu_id):
-	if 'username' not in login_session:
-		return redirect ('/login')
+	#if 'username' not in login_session:
+	#	return redirect ('/login')
 
 	restaurant = session.query(Restaurant).get(restaurant_id)
 	creator = getUserInfo(restaurant.user_id)
 
 	if creator.id != login_session['user_id']:
-		return "<script>function myFunction() {alert('You are not authorized to delete menu to this restaurant. \
-		 Please create your own restaurant in order to delete menu.');}</script><body onload='myFunction()''>"
+		return "<script>function myFunction() {alert('You are not authorized to \
+			delete menu to this restaurant. \
+		 Please create your own restaurant in order to delete menu.');}\
+		</script><body onload='myFunction()''>"
 
 
 	restaurant = session.query(Restaurant).get(restaurant_id)
@@ -484,7 +562,8 @@ def deleteMenuItem(restaurant_id, menu_id):
 		return redirect(url_for('showMenu', restaurant_id=restaurant_id))
 
 	else:
-		return render_template("deletemenuitem.html", restaurant = restaurant, menu_id=menu_id, menu_item=menu_item)
+		return render_template("deletemenuitem.html", restaurant = restaurant, \
+			menu_id=menu_id, menu_item=menu_item)
 
 
 
@@ -507,7 +586,8 @@ def restaurantMenuJSON(restaurant_id):
 # "routing and method for single menu api"
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:menu_id>/JSON')
 def restaurantOneMenuJSON(restaurant_id, menu_id):
-	item = session.query(MenuItem).filter(MenuItem.id == menu_id, MenuItem.restaurant_id == restaurant_id).one()
+	item = session.query(MenuItem).filter(MenuItem.id == menu_id,\
+	 MenuItem.restaurant_id == restaurant_id).one()
 	return jsonify(MenuItem = [item.serialize])
 
 # "routing and method for restaurants xml"
@@ -527,7 +607,8 @@ def restaurantsMenuXML(restaurant_id):
 # "routing and method for restaurants single menu xml"
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:menu_id>/XML')
 def restaurantsSingleMenuXML(restaurant_id, menu_id):
-    item = session.query(MenuItem).filter(MenuItem.id == menu_id, MenuItem.restaurant_id == restaurant_id).one()
+    item = session.query(MenuItem).filter(MenuItem.id == menu_id,\
+     MenuItem.restaurant_id == restaurant_id).one()
     return render_template('restaurantSingleMenu.xml', item=item)
 
 
