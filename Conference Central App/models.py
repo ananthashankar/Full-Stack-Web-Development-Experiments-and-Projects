@@ -48,7 +48,8 @@ class BooleanMessage(messages.Message):
 
 class Speaker(ndb.Model):
     """Speaker -- Speaker object"""
-    speaker     = ndb.StringProperty()
+    name     = ndb.StringProperty()
+    sessions    = ndb.StringProperty(repeated=True)
 
 class Session(ndb.Model):
     """Session -- Session object"""
