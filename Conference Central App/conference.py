@@ -611,7 +611,7 @@ class ConferenceApi(remote.Service):
         """ Get Session Objects for a given speaker """
         # retrieving the sessions by speaker using query by kind
 
-        spkr = Speaker.query(Speaker.speaker == request.speaker).get()
+        spkr = Speaker.query(Speaker.name == request.speaker).get()
         print spkr.sessions
         sessions = spkr.sessions
 
@@ -696,9 +696,7 @@ class ConferenceApi(remote.Service):
                 'Only the owner of the conference create a session.')
 
 
-        if data['sessionName']:
-            data['sessionName'] = data['sessionName']
-        else:
+        if not data['sessionName']:
             raise endpoints.BadRequestException("Session 'name' field required")
 
         # add default values for those missing (both data model & outbound Message)
@@ -725,17 +723,17 @@ class ConferenceApi(remote.Service):
             data['websafeConferenceKey'] = request.websafeConferenceKey
 
 
-        # generate Conference Key based on webSafeConferenceKey and Conference
-        # ID based on Conference key get Conference key from ID
-        c_key = ndb.Key(Conference, request.websafeConferenceKey).get()
+        # generate Conference based on webSafeConferenceKey
+        # generate ID based on Conference key as parent for session
+        c_key = ndb.Key(urlsafe=request.websafeConferenceKey)
         s_id = Session.allocate_ids(size=1, parent=c_key)[0]
         s_key = ndb.Key(Session, s_id, parent=c_key)
 
         data['key'] = s_key
 
-        print str(s_key)
+        print s_key.urlsafe()
 
-        request.websafeSessionKey = str(s_key)
+        request.websafeSessionKey = s_key.urlsafe()
 
         Session(**data).put()
 
@@ -747,6 +745,8 @@ class ConferenceApi(remote.Service):
 
         print " here value spks ",spks
 
+        #If the speaker is not already present create a new speaker else append the session 
+        #to exising sessions of the speaker
         if not spks:
             del data['key']
             del data['date']
@@ -833,7 +833,7 @@ class ConferenceApi(remote.Service):
 
     @endpoints.method(SESSION_DEL_WISHLIST_GET, BooleanMessage, 
             path='session/delWishList',
-            http_method='POST', name='delSessionFromWishList')
+            http_method='DELETE', name='delSessionFromWishList')
     def delSessionFromWWishList(self, request):
         """Del Sessions from wishList"""
         return self._delSessionFromWishlist(request)
@@ -929,7 +929,7 @@ class ConferenceApi(remote.Service):
             featuredSpeaker = {}
             sessions = Session.query(Session.speaker == speaker).fetch()
             featuredSpeaker[speaker] = sessions
-            memcache.set(MEMCACHE_FEATURED_SPEAKER_KEY, value=featuredSpeaker)
+            memcache.set(MEMCACHE_FEATURED_SPEAKER_KEY, value=str(featuredSpeaker))
 
         return featuredSpeaker
 

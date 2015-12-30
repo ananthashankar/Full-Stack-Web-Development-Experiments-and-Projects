@@ -50,8 +50,8 @@ Project tasks related:
 - Task 1:
  - Session and SessionForm has been implemented
  - All the date field has been set as ndb.dateProperty(), time field has been set as ndb.timeProperty() and enum fields have been set as enum field property
- - Speakers name are added as a String in Session’s speaker field and every speaker is added to its entity Speaker with saving name
- - Since we’re not using speaker’s details explicitly on any methods in the mentioned tasks only name has been added as a property to Session entity
+ - Speakers name are added as a String in Session’s speaker field and every speaker is added to its entity Speaker with saving name and the session's key
+ - Speaker entity has sessions property which is used to store the sessions of a speaker
  - webSafeSession is added only in sessionForm as it is only used in retrieving the Session
  - webConferenceKey has been added as a reference to each session with their respective conference
  - profile has been with wishList property to save all wishlist sessions with string property set to true to save only webSafeKey of the session
